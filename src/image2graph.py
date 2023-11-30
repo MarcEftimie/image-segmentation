@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import networkx as nx
+from augmenting_path import augmentingPath
 
 
 def boundaryPenalty(p1, p2):
@@ -17,31 +18,31 @@ def connectPixels(graph, image):
             pixel_count = row * image_width + col
 
             # Don't add bottom edges for pixels on the bottom edge
-            if row != image_height - 1:
+            if row + 1 < image_height:
                 bp = boundaryPenalty(image[row][col], image[row + 1][col])
                 graph.add_edge(pixel_count, pixel_count + image_width, weight=bp)
+                graph.add_edge(pixel_count + image_width, pixel_count, weight=bp)
                 max_capacity = max(max_capacity, bp)
 
             # Don't add right edges for pixels on the right edge
-            if col != image_width - 1:
+            if col + 1 < image_width:
                 bp = boundaryPenalty(image[row][col], image[row][col + 1])
                 graph.add_edge(pixel_count, pixel_count + 1, weight=bp)
+                graph.add_edge(pixel_count + 1, pixel_count, weight=bp)
                 max_capacity = max(max_capacity, bp)
 
     return max_capacity
 
 
 def connectSourceAndSink(graph, source_pixel, sink_pixel, max_capacity):
-    graph.add_edge("SOURCE", source_pixel, weight=max_capacity)
-    graph.add_edge("SINK", sink_pixel, weight=max_capacity)
-
+    graph.add_edge(source_pixel, source_pixel, weight=max_capacity)
+    graph.add_edge(sink_pixel, sink_pixel, weight=max_capacity)
 
 def buildGraph(image):
     pixel_graph = nx.Graph()
     max_capacity = connectPixels(pixel_graph, image)
-    connectSourceAndSink(pixel_graph, 0, image.size - 1, max_capacity)
+    connectSourceAndSink(pixel_graph, image.size, image.size +1, max_capacity)
     return pixel_graph
-
 
 def bfs(graph, source, target):
     visited = {source}
@@ -58,7 +59,6 @@ def bfs(graph, source, target):
                 visited.add(neighbor)
                 queue.append((neighbor, path + [(current, neighbor)]))
     return None
-
 
 def ford_fulkerson(graph, source, sink):
     max_flow = 0
@@ -78,12 +78,11 @@ def ford_fulkerson(graph, source, sink):
         path = bfs(graph, source, sink)
     return graph, max_flow
 
-
 # Your existing buildGraph and other functions
 
 if __name__ == "__main__":
-    image = cv2.imread("./images/monkey.jpg", cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (50, 50))
+    image = cv2.imread("./images/test1.jpg", cv2.IMREAD_GRAYSCALE)
+    image = cv2.resize(image, (30, 30))
     graph = buildGraph(image)
-    graph, max_flow = ford_fulkerson(graph, "SOURCE", "SINK")
-    print(graph.edges.data())
+    cuts = augmentingPath(graph, image.size, image.size + 1)
+    print(cuts)
