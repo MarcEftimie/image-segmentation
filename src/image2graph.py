@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from math import exp, pow
+from augmenting_path import augmentingPath
 
 
 def boundaryPenalty(ip, iq):
@@ -42,18 +43,19 @@ def connectSourceAndSink(graph, image, source_pixel, sink_pixel, max_capacity):
     graph[SOURCE][source_pixel + width + 1] = max_capacity
     graph[SOURCE][source_pixel + 2 * width] = max_capacity
     graph[sink_pixel][SINK] = max_capacity
-    graph[sink_pixel][SINK - 1] = max_capacity
-    graph[sink_pixel][SINK - 2] = max_capacity
-    graph[sink_pixel][SINK - width] = max_capacity
-    graph[sink_pixel][SINK - width - 1] = max_capacity
-    graph[sink_pixel][SINK - 2 * width] = max_capacity
+    graph[sink_pixel - 1][SINK] = max_capacity
+    graph[sink_pixel - 2][SINK] = max_capacity
+    graph[sink_pixel - width ][SINK] = max_capacity
+    graph[sink_pixel - width - 1][SINK] = max_capacity
+    graph[sink_pixel - 2 * width][SINK] = max_capacity
+    return [source_pixel, source_pixel + 1, source_pixel + 2, source_pixel + width, source_pixel + width + 1, source_pixel + 2 * width, sink_pixel, sink_pixel - 1, sink_pixel - 2, sink_pixel - width, sink_pixel - width - 1, sink_pixel - 2 * width]
 
 
 def buildGraph(image):
     pixel_graph = np.zeros((image.size + 2, image.size + 2), dtype="int32")
     max_capacity = connectPixels(pixel_graph, image)
-    connectSourceAndSink(pixel_graph, image, 0, image.size - 1, max_capacity)
-    return pixel_graph
+    lst = connectSourceAndSink(pixel_graph, image, 0, image.size - 1, max_capacity)
+    return pixel_graph, lst
 
 
 def bfs_find_path(graph, source, sink):
@@ -91,7 +93,7 @@ def find_min_cut(graph, source):
     return visited
 
 
-def augmentingPath(graph, source, sink):
+def augmentingPath2(graph, source, sink):
     path = bfs_find_path(graph, source, sink)
     while path:
         augment_flow(graph, path)
@@ -105,16 +107,15 @@ def augmentingPath(graph, source, sink):
                 cuts.append((u, v))
     return cuts
 
+def colorPixel(i, j):
+    try:
+        image[i][j] = (255, 0, 0)
+    except:
+        print(i, j)
 
 def displayCut(image, cuts):
-    def colorPixel(i, j):
-        try:
-            image[i][j] = (255, 0, 0)
-        except:
-            pass
 
-    r, c = image.shape
-    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    r, c, _ = image.shape
     for c in cuts:
         if (
             c[0] != image.size - 2
@@ -128,11 +129,13 @@ def displayCut(image, cuts):
 
 
 if __name__ == "__main__":
-    image = cv2.imread("./images/test.jpg", cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (10, 10))
-    graph = buildGraph(image)
-    print(graph.size)
-    cuts = augmentingPath(graph, len(graph) - 2, len(graph) - 1)
+    image = cv2.imread("./images/test1.jpg", cv2.IMREAD_GRAYSCALE)
+    image = cv2.resize(image, (30, 30))
+    graph, lst = buildGraph(image)
+    cuts = augmentingPath2(graph, len(graph) - 2, len(graph) - 1)
+    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    for i in lst:
+        colorPixel(i // 30, i % 30)
     image = displayCut(image, cuts)
     cv2.imshow("image", image)
     cv2.waitKey(0)
