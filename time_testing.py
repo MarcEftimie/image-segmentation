@@ -44,6 +44,6 @@ for index, val in enumerate(seg_list):
         "k-means_t": exe_time_kmeans,
         "mean-shift_t": exe_time_mean_shift,
     }
-    filename = f"test_data/timing_run_{index}"
+    filename = f"test_data/timing_run_{index}.json"
     with open(filename, "w") as file_object:
         json.dump(result, file_object)
