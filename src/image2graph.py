@@ -6,9 +6,7 @@ from augmenting_path import augmentingPath
 
 
 def boundaryPenalty(ip, iq):
-    bp = 100 * exp(-pow(int(ip) - int(iq), 2) / (2 * pow(30, 2)))
-    return bp
-
+    return 100 * exp(-pow(int(ip) - int(iq), 2) / (2 * pow(30, 2)))
 
 def connectPixels(graph, image):
     max_capacity = -float("inf")
@@ -58,58 +56,58 @@ def buildGraph(image):
     return pixel_graph, lst
 
 
-def bfs_find_path(graph, source, sink):
-    rows, cols = graph.shape
-    queue = [(source, [])]
-    visited = set()
-    while queue:
-        current, path = queue.pop(0)
-        if current == sink:
-            return path
-        visited.add(current)
-        for neighbour in range(cols):
-            if graph[current, neighbour] > 0 and neighbour not in visited:
-                queue.append((neighbour, path + [(current, neighbour)]))
-    return None
+def bfs(rGraph, s, t, parent):
+    visited = [False] * len(rGraph)
+    queue = []
 
+    queue.append(s)
+    visited[s] = True
 
-def augment_flow(graph, path):
-    flow = min(graph[u, v] for u, v in path)
-    for u, v in path:
-        graph[u, v] -= flow
-        graph[v, u] += flow
-
-
-def find_min_cut(graph, source):
-    rows, cols = graph.shape
-    visited = {source}
-    queue = [source]
     while queue:
         u = queue.pop(0)
-        for v in range(cols):
-            if graph[u, v] > 0 and v not in visited:
-                visited.add(v)
-                queue.append(v)
-    return visited
 
+        for ind, val in enumerate(rGraph[u]):
+            if visited[ind] == False and val > 0:
+                queue.append(ind)
+                visited[ind] = True
+                parent[ind] = u
 
-def augmentingPath2(graph, source, sink):
-    path = bfs_find_path(graph, source, sink)
-    while path:
-        augment_flow(graph, path)
-        path = bfs_find_path(graph, source, sink)
+    return True if visited[t] else False
 
-    visited = find_min_cut(graph, source)
+def augmentingPath2(rGraph, source, sink):
+    parent = [-1] * len(rGraph)
+    max_flow = 0
     cuts = []
-    for u in visited:
-        for v in range(graph.shape[1]):
-            if v not in visited and graph[u, v] == 0:
+
+    while bfs(rGraph, source, sink, parent):
+        path_flow = float("Inf")
+        s = sink
+
+        while s != source:
+            path_flow = min(path_flow, rGraph[parent[s]][s])
+            s = parent[s]
+
+        max_flow += path_flow
+        v = sink
+
+        while v != source:
+            u = parent[v]
+            rGraph[u][v] -= path_flow
+            rGraph[v][u] += path_flow
+            if rGraph[u][v] == 0 and rGraph[v][u] > 0:
                 cuts.append((u, v))
+            v = parent[v]
+
     return cuts
 
 def colorPixel(i, j):
     try:
         image[i][j] = (255, 0, 0)
+    except:
+        print(i, j)
+def colorPixelr(i, j):
+    try:
+        image[i][j] = (0, 0, 255)
     except:
         print(i, j)
 
@@ -132,46 +130,13 @@ if __name__ == "__main__":
     image = cv2.imread("./images/test1.jpg", cv2.IMREAD_GRAYSCALE)
     image = cv2.resize(image, (30, 30))
     graph, lst = buildGraph(image)
-    cuts = augmentingPath2(graph, len(graph) - 2, len(graph) - 1)
+    qgraph = graph.copy()
+    cuts = augmentingPath(qgraph, len(graph) - 2, len(graph) - 1)
     image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     for i in lst:
-        colorPixel(i // 30, i % 30)
+        colorPixelr(i // 30, i % 30)
     image = displayCut(image, cuts)
     cv2.imshow("image", image)
     cv2.waitKey(0)
     print("Cuts for segmentation:", cuts)
 
-# def bfs(graph, source, target):
-#     visited = {source}
-#     queue = [(source, [])]
-#     while queue:
-#         current, path = queue.pop(0)
-#         if current == target:
-#             return path
-#         for neighbor in graph.neighbors(current):
-#             residual = graph[current][neighbor]["weight"] - graph[current][
-#                 neighbor
-#             ].get("flow", 0)
-#             if residual > 0 and neighbor not in visited:
-#                 visited.add(neighbor)
-#                 queue.append((neighbor, path + [(current, neighbor)]))
-#     return None
-
-
-# def ford_fulkerson(graph, source, sink):
-#     max_flow = 0
-#     path = bfs(graph, source, sink)
-#     while path:
-#         # Find minimum residual capacity of the edges along the path
-#         flow = min(graph[u][v]["weight"] - graph[u][v].get("flow", 0) for u, v in path)
-#         for u, v in path:
-#             if "flow" not in graph[u][v]:
-#                 graph[u][v]["flow"] = 0
-#             if "flow" not in graph[v][u]:
-#                 graph[v][u] = {"weight": 0, "flow": 0}
-#             # Update residual capacities of the forward and backward edges
-#             graph[u][v]["flow"] += flow
-#             graph[v][u]["flow"] -= flow
-#         max_flow += flow
-#         path = bfs(graph, source, sink)
-#     return graph, max_flow
