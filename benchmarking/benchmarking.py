@@ -3,7 +3,7 @@
 import timeit
 import json
 from skimage import data
-from testing import n_cut, k_means, mean_shift
+from segmentation import n_cut, k_means, mean_shift
 
 
 class CaptureReturnValue:
