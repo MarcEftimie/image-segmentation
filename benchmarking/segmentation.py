@@ -20,7 +20,7 @@ def n_cut(image, segments, visualize=False):
     out2 = color.label2rgb(labels2, image, kind="avg", bg_label=0)
 
     if visualize:
-        fig, ax = plt.subplots(nrows=2, sharex=True, sharey=True, figsize=(6, 8))
+        _, ax = plt.subplots(nrows=2, sharex=True, sharey=True, figsize=(6, 8))
 
         ax[0].imshow(out1)
         ax[1].imshow(out2)
@@ -41,9 +41,7 @@ def k_means(image, clusters, visualize=False):
         kmeans.labels_.reshape(image.shape[0], -1), image, kind="avg"
     )
     if visualize:
-        plt.subplot(1, 3, 3)
         plt.title("Kmeans")
-        plt.xticks([]), plt.yticks([])
         plt.imshow(kmeans_result)
         plt.show()
 
@@ -78,7 +76,6 @@ def mean_shift(image, bandwith, visualize=False):
 
     if visualize:
         plt.title("Meanshift")
-        plt.xticks([]), plt.yticks([])
         plt.imshow(result)
         plt.show()
     return len(segments)

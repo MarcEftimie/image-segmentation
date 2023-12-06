@@ -7,7 +7,7 @@ import glob
 import numpy as np
 import pandas as pd
 
-PATH = "test_data/run_2"
+PATH = "test_data/chelsea"
 time_data = []
 
 json_files = glob.glob(os.path.join(PATH, "*.json"))
