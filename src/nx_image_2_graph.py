@@ -1,10 +1,10 @@
+"""
+Functions for converting an image to a graph and displaying the cut on the image.
+"""
+
 from math import exp, pow
 import numpy as np
-import cv2
 import networkx as nx
-from nx_augmenting_path import augmentingPath
-from our_nx_augmenting_path import augmentingPath2
-from nx_user_input import get_user_input, SCALE_FACTOR
 
 def boundaryPenalty(p1, p2):
     """
@@ -52,21 +52,22 @@ def connectPixels(graph, image):
                 y = row * image_width + col + 1
                 bp = boundaryPenalty(image[row][col], image[row][col + 1])
                 if int(bp) > 0:
-                    graph.add_edge(x, y, capacity=int(bp))
+                    # convert bp to in since capacities can only be integers
+                    graph.add_edge(x, y, capacity=int(bp)) 
                     graph.add_edge(y, x, capacity=int(bp))
                 max_capacity = max(max_capacity, bp)
 
     return int(max_capacity)
 
 
-def connectSourceAndSink(graph, source_pixel, sink_pixel, source_points, sink_points, max_capacity):
+def connectSourceAndSink(image, graph, SOURCE, SINK, source_points, sink_points, max_capacity):
     """
     Connects source and sink nodes to the designated source and sink points in the graph,
     with edges having capacities set to the maximum capacity.
 
     Args:
         graph (networkx.DiGraph): The graph where the nodes and edges are added.
-        source_pixel, sink_pixel (int): Indices of the source and sink pixels in the graph.
+        SOURCE, SINK (int): The source and sink node indices.
         source_points, sink_points (list of tuples): Points to be connected to the source and sink.
         max_capacity (int): The maximum capacity to be used for the edges connecting to source and sink.
 
@@ -74,94 +75,39 @@ def connectSourceAndSink(graph, source_pixel, sink_pixel, source_points, sink_po
         list: A list containing the indices of the source and sink points.
     """
     width, height = image.shape
-    SOURCE = image.size
-    SINK = image.size + 1
     lst = []
     for point in source_points:
-        point_idx = point[0] * width + point[1]
+        point_idx = point[0] * width + point[1]     # row * width + col
         lst.append(point_idx)
         graph.add_edge(SOURCE, point_idx, capacity=max_capacity)
     for point in sink_points:
-        point_idx = point[0] * width + point[1]
+        point_idx = point[0] * width + point[1]     # row * width + col
         lst.append(point_idx)
         graph.add_edge(point_idx, SINK, capacity=max_capacity)
     return lst
 
-def buildGraph(image, source_points, sink_points):
+def buildGraph(image, SOURCE, SINK, source_points, sink_points):
     """
     Builds a directed graph from the given image, connecting pixels and adding source and sink.
 
     Args:
         image (np.array): The image represented as a 2D numpy array.
+        SOURCE, SINK (int): The source and sink node indices.
         source_points, sink_points (list of tuples): Points to be used as source and sink in the graph.
 
     Returns:
         tuple: A tuple containing the graph and a list of indices of source and sink points.
     """
     pixel_graph = nx.DiGraph()
+
+    # add pixels as nodes to create adjacency matrix (represented as a graph)
     for x in range(image.size + 2):
         for y in range(image.size + 2):
             pixel_graph.add_edge(x, y, capacity=0)
+
     max_capacity = connectPixels(pixel_graph, image)
-    source_sink = connectSourceAndSink(pixel_graph, 0, image.size - 1, source_points, sink_points, max_capacity)
+
+    # connect source and sink to user input points
+    source_sink = connectSourceAndSink(image, pixel_graph, SOURCE, SINK, source_points, sink_points, max_capacity)
     return pixel_graph, source_sink
 
-def colorPixel(image, i, j, red=False):
-    """
-    Colors a pixel at a specified position in the global `image` array.
-
-    Args:
-        image (np.array): The image to draw on.
-        i, j (int): The row and column indices of the pixel in the image.
-        red (bool): Whether to color the pixel red or blue.
-
-    Returns:
-        None
-    """
-    try:
-        if red:
-            image[i][j] = (0, 0, 255)
-        else:
-            image[i][j] = (255, 0, 0)
-    except:
-        print(i, j)
-
-def displayCut(image, cuts):
-    """
-    Displays the cut on the image by coloring the pixels on the cut.
-
-    Args:
-        image (np.array): The image on which the cut is to be displayed.
-        cuts (list of tuples): The list of cuts where each cut is a tuple of two pixel indices.
-
-    Returns:
-        np.array: The image with the cut displayed.
-    """
-    r, c, _ = image.shape
-    for c in cuts:
-        if (
-            c[0] != image.size - 2
-            and c[0] != image.size - 1
-            and c[1] != image.size - 2
-            and c[1] != image.size - 1
-        ):
-            colorPixel(image, c[0] // r, c[0] % r)
-            colorPixel(image, c[1] // r, c[1] % r)
-    return image
-
-if __name__ == "__main__":
-    image = cv2.imread("./images/test1.jpg", cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (30, 30))
-    source_points, sink_points = get_user_input(image)
-
-    graph, source_sink = buildGraph(image, source_points, sink_points)
-
-    cuts = augmentingPath2(graph, image.size, image.size + 1)
-    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-    for i in source_sink:
-        colorPixel(image, i // 30, i % 30, red=True)
-    image = displayCut(image, cuts)
-    image = cv2.resize(image, (0, 0), fx=SCALE_FACTOR, fy=SCALE_FACTOR)
-    cv2.imshow("image", image)
-    cv2.waitKey(0)
-    print(cuts)
