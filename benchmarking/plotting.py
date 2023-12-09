@@ -6,8 +6,12 @@ import os
 import glob
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from skimage import data as data_image
 
-PATH = "test_data/chelsea"
+
+PATH = "test_data/astronaut/run_256"
 time_data = []
 
 json_files = glob.glob(os.path.join(PATH, "*.json"))

@@ -1,4 +1,5 @@
 # Testing Different Segementation Algorithims
+from time import perf_counter as pc
 import numpy as np
 from sklearn.cluster import KMeans, MeanShift, estimate_bandwidth
 from matplotlib import pyplot as plt
@@ -10,12 +11,14 @@ def n_cut(image, segments, visualize=False):
     """
     Simple N-Cut Segmentation
     """
+    t0 = pc()
     labels1 = segmentation.slic(
         image, compactness=80, n_segments=segments, start_label=1
     )
+    slic_time = pc() - t0
     out1 = color.label2rgb(labels1, image, kind="avg", bg_label=0)
 
-    g = sk_graph.rag_mean_color(image, labels1)
+    g = sk_graph.rag_mean_color(image, labels1, mode="similarity")
     labels2 = sk_graph.cut_normalized(labels1, g)
     out2 = color.label2rgb(labels2, image, kind="avg", bg_label=0)
 
@@ -30,6 +33,7 @@ def n_cut(image, segments, visualize=False):
 
         plt.tight_layout()
         plt.show()
+    return slic_time
 
 
 def k_means(image, clusters, visualize=False):
