@@ -12,6 +12,7 @@ This project is a implementation and extension of [Julie Jiang's image segmentat
 2. **User Input Handling**: [`nx_user_input.py`](https://github.com/MarcEftimie/image-segmentation/blob/main/src/nx_user_input.py) - Handles user inputs for selecting seed points on the image.
 3. **Image to Graph Conversion**: [`nximage2graph.py`](https://github.com/MarcEftimie/image-segmentation/blob/main/src/nximage2graph.py) - Converts images into graph representations for processing.
 4. **Custom Augmenting Path Algorithm**: [`our_nx_augmenting_path.py`](https://github.com/MarcEftimie/image-segmentation/blob/main/src/our_nx_augmenting_path.py) - Our custom implementation of the augmenting path algorithm.
+5. **Algorithm Comparison and Benchmark**: [`benchmarking/`](https://github.com/MarcEftimie/image-segmentation/tree/main/benchmarking) - A comparison of multiple different image segmentation algorithms (K-means, N-cut, SLIC, and Mean-shift) and their runtime, using the `skimage` library.
 
 ## Installation and Usage
 
