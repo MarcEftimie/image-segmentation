@@ -1,5 +1,5 @@
 """
-Plotting Timing Data
+Results of Timing Data
 """
 import json
 import os
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from skimage import data as data_image
 
-
+# Set Path to Dataset
 PATH = "test_data/astronaut/run_256"
 time_data = []
 
@@ -23,6 +23,7 @@ for f in json_files:
     data["mean-shift_t"] = np.round(np.mean(data["mean-shift_t"]), 2)
     time_data.append(data)
 
+# Sort by number of segments
 time_data = pd.DataFrame.from_dict(time_data)
 time_data = time_data.sort_values(by=["segments"])
 print(time_data)
