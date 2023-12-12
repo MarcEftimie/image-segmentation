@@ -14,6 +14,11 @@ This project is a implementation and extension of [Julie Jiang's image segmentat
 4. **Custom Augmenting Path Algorithm**: [`our_nx_augmenting_path.py`](https://github.com/MarcEftimie/image-segmentation/blob/main/src/our_nx_augmenting_path.py) - Our custom implementation of the augmenting path algorithm.
 5. **Algorithm Comparison and Benchmark**: [`benchmarking/`](https://github.com/MarcEftimie/image-segmentation/tree/main/benchmarking) - A comparison of multiple different image segmentation algorithms (K-means, N-cut, SLIC, and Mean-shift) and their runtime, using the `skimage` library.
 
+## Branches
+
+1. **main**: The main branch contains the code for the image segmentation algorithm.
+2. **test_segmentation**: This branch contains the code for testing the segmentation algorithm on a variety of images. It also contains the code for generating the benchmarking data.
+
 ## Installation and Usage
 
 1. Install the required packages using `pip install -r requirements.txt`.
