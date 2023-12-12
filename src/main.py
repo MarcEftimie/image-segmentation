@@ -7,6 +7,9 @@ from nx_image_2_graph import buildGraph
 from nx_augmenting_path import augmentingPath
 from our_nx_augmenting_path import augmentingPath2
 from nx_user_input import get_user_input, displayCut, colorPixel, SCALE_FACTOR
+from time import time
+import networkx as nx
+import matplotlib.pyplot as plt
 
 image = cv2.imread("./images/test1.jpg", cv2.IMREAD_GRAYSCALE)
 image = cv2.resize(image, (30, 30))
@@ -20,15 +23,19 @@ source_points, sink_points = get_user_input(image)
 # build the graph from the image
 graph, source_sink = buildGraph(image, SOURCE, SINK, source_points, sink_points)
 
+time1 = time()
 # run the augmenting path algorithm to find the cuts
 cuts = augmentingPath(graph, image.size, image.size + 1)
+
+time2 = time()
+print("Time taken: ", time2 - time1)
 
 # convert the image to RGB for coloring
 image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
 # color the source and sink points red on the image
-for i in source_sink:
-    colorPixel(image, i // 30, i % 30, red=True)
+for i,j in source_sink:
+    colorPixel(image, i, j, red=True)
 
 # display the cut on the image
 image = displayCut(image, cuts)

@@ -83,9 +83,9 @@ def on_click(event, x, y, flags, is_source):
     global clicked_points, image
     if event == cv2.EVENT_LBUTTONDOWN:
         if is_source:
-            cv2.circle(image, (x, y), 20, (0, 255, 0), -1)
+            cv2.circle(image, (x, y), RADIUS, (0, 255, 0), -1)
         else:
-            cv2.circle(image, (x, y), 20, (255, 0, 0), -1)
+            cv2.circle(image, (x, y), RADIUS, (255, 0, 0), -1)
         for i in range(x - RADIUS, x + RADIUS):
             for j in range(y - RADIUS, y + RADIUS):
                 if point_distance((i, j), (x, y)) <= RADIUS:

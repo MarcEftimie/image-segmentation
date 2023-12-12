@@ -1,8 +1,9 @@
 """
 Our implementation of the Ford-Fulkerson algorithm using Breadth-First Search (BFS) to find augmenting paths.
 """
+from queue import Queue
 
-def augmentingPath2(graph, source, sink):
+def augmentingPath2(rGraph, source, sink):
     """
     Finds the augmenting paths in the given graph from source to sink and returns the cuts
     corresponding to the maximum flow.
@@ -18,37 +19,27 @@ def augmentingPath2(graph, source, sink):
     Returns:
         (list): A list of tuples representing the cuts in the graph, where each cut is a tuple of two node indices.
     """
-
     def bfs():
-        """
-        Performs a Breadth-First Search to find an augmenting path from source to sink.
-
-        Returns:
-            (tuple): A tuple containing a boolean indicating if a path was found, and a dictionary representing
-                the parent of each node in the found path.
-        """
         visited = {node: False for node in graph.nodes}  # Track visited nodes
-        queue = []  # Queue for BFS
+        queue = Queue()  # Queue for BFS using queue.Queue
         parent = {node: -1 for node in graph.nodes}  # Store parent of each node
 
         # Initialize BFS from the source
-        queue.append(source)
+        queue.put(source)
         visited[source] = True
 
-        while queue:
-            u = queue.pop(0)
+        while not queue.empty():
+            u = queue.get()
             for v in graph.neighbors(u):
-                # If the neighbor hasn't been visited and the edge has remaining capacity
                 if not visited[v] and graph[u][v]['capacity'] > 0:
-                    queue.append(v)
+                    queue.put(v)
                     visited[v] = True
                     parent[v] = u
-                    # If we reached the sink, return the path found
                     if v == sink:
                         return True, parent
-        # If no path is found
         return False, parent
 
+    graph = rGraph.copy()  # Make a copy of the residual graph
     max_flow = 0  # Initialize maximum flow to zero
     cuts = []
     path_flow, parent = bfs()  # Find the first augmenting path

@@ -75,16 +75,14 @@ def connectSourceAndSink(image, graph, SOURCE, SINK, source_points, sink_points,
         list: A list containing the indices of the source and sink points.
     """
     width, height = image.shape
-    lst = []
     for point in source_points:
         point_idx = point[0] * width + point[1]     # row * width + col
-        lst.append(point_idx)
         graph.add_edge(SOURCE, point_idx, capacity=max_capacity)
     for point in sink_points:
         point_idx = point[0] * width + point[1]     # row * width + col
-        lst.append(point_idx)
         graph.add_edge(point_idx, SINK, capacity=max_capacity)
-    return lst
+    
+    return source_points + sink_points
 
 def buildGraph(image, SOURCE, SINK, source_points, sink_points):
     """
